@@ -1,0 +1,91 @@
+<html>
+    <head>
+	<style>
+
+        :root {
+            
+        }
+
+	    #textarea {
+	    	width: 100%;
+			height: 100%;
+			font-size: 1.3rem;
+			outline: none;
+			border: none; 
+			resize: none;
+			margin: 0;
+            padding: 1rem;
+        }
+
+        body {
+            margin: 0;
+        }
+
+	</style>
+    </head>
+    <body>
+        <textarea onkeydown="updateStorage()" id="textarea"></textarea>
+    </body>
+
+    <script>
+	
+        let db;
+
+        let open_db = () => {
+            const openRequest = window.indexedDB.open("main", 1);
+
+            openRequest.onsuccess = (e) => {
+                db = e.target.result;
+            }
+
+            openRequest.onerror = (e) => {
+                console.error("Error opening IndexedDB");
+            }
+
+            openRequest.onupgradeneeded = (e) => {
+                db = e.target.result;
+                const storeOS = db.createObjectStore("storage", {keyPath: "key"});
+            }
+        }
+
+        let writeToStorage = (text) => {
+            let item = {
+                "key": "default",
+                "content": text 
+            }
+
+            const tx = db.transaction("storage", "readwrite");
+            const store = tx.objectStore("storage");
+            let request = store.put(item);
+        }
+
+        let readFromStorage = () => {
+            const tx = db.transaction("storage", "readwrite");
+            const store = tx.objectStore("storage");
+            let request = store.get("default");
+
+            return request
+        }
+
+        let updateStorage = () => {
+            let textarea = document.getElementById("textarea");
+            writeToStorage(textarea.value);
+        }
+
+        let updateTextArea = () => {
+            let textarea = document.getElementById("textarea");
+            let request = readFromStorage();
+
+            request.onsuccess = (e) => {
+                textarea.value = e.target.result.content;
+            }
+        }
+
+        window.onload = (e) => {
+            updateTextArea();
+        }
+
+        open_db();
+
+    </script>
+</html>
