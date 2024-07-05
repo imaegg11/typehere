@@ -30,62 +30,150 @@
     <script>
 	
         let db;
+        let note_keys = {};
+        let current_key = localStorage["current_key"];
 
+        
+        let print = (s) => { // Pov python user moment
+            console.log(s); 
+        }
+        
         let open_db = () => {
             const openRequest = window.indexedDB.open("main", 1);
-
+            
             openRequest.onsuccess = (e) => {
                 db = e.target.result;
+                updateTextArea();
+                updateNoteKeys();
             }
 
             openRequest.onerror = (e) => {
                 console.error("Error opening IndexedDB");
+                console.error(e);
             }
-
+            
             openRequest.onupgradeneeded = (e) => {
                 db = e.target.result;
                 const storeOS = db.createObjectStore("storage", {keyPath: "key"});
+                
+                e.target.transaction.oncomplete = (e) => {
+                    create_note("default");
+                    current_key = Object.keys(note_keys)[0];
+                    localStorage["current_key"] = current_key;
+                }
             }
         }
 
-        let writeToStorage = (text) => {
+        let writeToStorageNoteKeys = () => {
             let item = {
-                "key": "default",
+                "key": "keys",
+                "content": note_keys
+            }
+
+            const tx = db.transaction("storage", "readwrite");
+            const store = tx.objectStore("storage");
+            let request = store.put(item);
+
+            request.onerror = (e) => {
+                console.error(e);
+            }
+        }
+
+        let writeToStorageContent = (key, name, text) => {
+            let item = {
+                "key": key,
+                "name": name,
                 "content": text 
             }
 
             const tx = db.transaction("storage", "readwrite");
             const store = tx.objectStore("storage");
             let request = store.put(item);
+
+            request.onerror = (e) => {
+                console.error(e);
+            }
         }
 
-        let readFromStorage = () => {
+        let readFromStorage = (key) => {
             const tx = db.transaction("storage", "readwrite");
             const store = tx.objectStore("storage");
-            let request = store.get("default");
+            let request = store.get(key);
 
             return request
         }
 
+        let deleteFromStorage = (key) => {
+            const tx = db.transaction("storage", "readwrite");
+            const store = tx.objectStore("storage");
+            let request = store.delete(key);
+
+            request.onerror = (e) => {
+                console.error(e);
+            }
+        }
+
         let updateStorage = () => {
             let textarea = document.getElementById("textarea");
-            writeToStorage(textarea.value);
+            writeToStorageContent(current_key, [current_key], textarea.value);
         }
 
         let updateTextArea = () => {
             let textarea = document.getElementById("textarea");
-            let request = readFromStorage();
+            let request = readFromStorage(current_key);
 
             request.onsuccess = (e) => {
                 textarea.value = e.target.result.content;
             }
+
+            request.onerror = (e) => {
+                console.error(e);
+            }
         }
 
-        window.onload = (e) => {
+        let find_default = () => {
+            let keys = Object.keys(note_keys).map((e) => { 
+                return parseInt(e);
+            });
+
+            return Math.min(...keys).toString();
+        }
+
+        let change_current_note = (key) => {
+            current_key = key;
+            localStorage["current_key"] = current_key;
             updateTextArea();
         }
 
-        open_db();
+        let delete_note = (key) => {
+
+            delete note_keys[key]
+            deleteFromStorage(key);
+
+            writeToStorageNoteKeys();
+            change_current_note(find_default());
+        }
+
+        let create_note = (name) => {
+            let key = Date.now().toString();
+            writeToStorageContent(key, name, "");
+            note_keys[key] = name;
+            writeToStorageNoteKeys();
+
+            change_current_note(key);
+        }
+        
+        let updateNoteKeys = () => {
+            let request = readFromStorage("keys");
+
+            request.onsuccess = (e) => {
+                note_keys = e.target.result.content;
+            }
+        }
+
+        window.onload = (e) => {
+            open_db();
+        }
 
     </script>
 </html>
