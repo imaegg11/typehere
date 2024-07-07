@@ -3,7 +3,13 @@
 	<style>
 
         :root {
-            
+            --light-bg: #e0e0e0;
+            --light-text: #0f0f0f;
+        }
+
+        .light {
+            color: var(--light-text);
+            background-color: var(--light-bg);
         }
 
 	    #textarea {
@@ -15,44 +21,108 @@
 			resize: none;
 			margin: 0;
             padding: 1rem;
+            background-color: inherit
         }
 
         body {
             margin: 0;
         }
 
+        .hidden {
+            display: none;
+        }
+
+        #cmdP {
+            position: fixed;
+            z-index: 2;
+            width: 30%;
+            max-height: 30%;
+            height: 30%;
+            background-color: inherit;
+
+
+            border-style: none;
+            border-width: 0.05rem;
+            border-radius: 10px;
+        }
+
+        #cmdP::backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #cmdP-input {
+            width: 95%;
+        }
+
 	</style>
     </head>
-    <body>
-        <textarea onkeydown="updateStorage()" id="textarea"></textarea>
+    <body class="light">
+        <textarea id="textarea"></textarea>
+        <dialog id="cmdP">
+            <input id="cmdP-input" type="text" placeholder="Search for notes">
+        </dialog>
     </body>
 
     <script>
-	
-        let db;
-        let note_keys = {};
-        let current_key = localStorage["current_key"];
 
-        
         let print = (s) => { // Pov python user moment
             console.log(s); 
         }
+
+        // Key Presses
+
+        let last_key_press = null;
+
+        document.addEventListener("keydown", (e) => {
+            if (e.ctrlKey) {
+                switch (e.keyCode) {
+                    case 75:
+                        cmdPToggle();
+                        e.preventDefault();
+                        break;
+                }
+            }
+
+            last_key_press = e.keyCode;
+
+            // print(e);
+        });
+	
+        // Modal 
+
+        let cmdPToggle = () => {
+            let cmdP = document.getElementById("cmdP");
+            if (cmdP.open) {
+                cmdP.close();
+            } else {
+                cmdP.showModal();
+                document.activeElement.blur();
+            }
+        }       
+
+
+
+        // DB stuff
+
+        let db;
+        let note_keys = {};
+        let current_key = localStorage["current_key"];
         
         let open_db = () => {
-            const openRequest = window.indexedDB.open("main", 1);
+            const open_request = window.indexedDB.open("main", 1);
             
-            openRequest.onsuccess = (e) => {
+            open_request.onsuccess = (e) => {
                 db = e.target.result;
                 updateTextArea();
                 updateNoteKeys();
             }
 
-            openRequest.onerror = (e) => {
+            open_request.onerror = (e) => {
                 console.error("Error opening IndexedDB");
                 console.error(e);
             }
             
-            openRequest.onupgradeneeded = (e) => {
+            open_request.onupgradeneeded = (e) => {
                 db = e.target.result;
                 const storeOS = db.createObjectStore("storage", {keyPath: "key"});
                 
