@@ -40,7 +40,7 @@
             position: fixed;
             z-index: 2;
             width: 30%;
-            max-height: 15rem;
+            max-height: 16rem;
             background-color: inherit;
 
             border-style: none;
@@ -116,49 +116,13 @@
 	</style>
     </head>
     <body class="light">
-        <textarea id="textarea"></textarea>
+        <textarea onkeydown="updateStorage()" id="textarea"></textarea>
         <dialog class="hidden" id="cmdP">
             <div>
                 <input id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">
                 <p id="notes-text">NOTES</p>
             </div>
             <div id="notes">
-                <!-- <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div>
-                <div class="note">
-                    <p class="note-name">Default</p>
-                    <p class="note-creation-date">07/07/2024</p>
-                </div> -->
             </div>
         </dialog>
     </body>
@@ -189,22 +153,23 @@
                         cmdPToggle();
                         break;
                     case 40:
+                        e.preventDefault();
                         selected_index = Math.min(selected_index + 1, max_selected);
                         handleSearch();
                         break;
                     case 38:
+                        e.preventDefault();
                         selected_index = Math.max(selected_index - 1, 0);
                         handleSearch();
                         break;
-                    case 13: 
-                        change_current_note(Object.keys(note_keys)[selected_index][0]);
-                        cmdPToggle();
+                    default: 
+                        figureOutWhatToDo(e.keyCode, selected_index)
                         break;
 
                 }
             } 
 
-            // print(e);
+            print(e);
         });
 
         // DB stuff
@@ -290,7 +255,7 @@
 
         let updateStorage = () => {
             let textarea = document.getElementById("textarea");
-            writeToStorageContent(current_key, [current_key], textarea.value);
+            writeToStorageContent(current_key, note_keys[current_key], textarea.value);
         }
 
         let updateTextArea = () => {
@@ -358,6 +323,7 @@
             if (cmdP.open) {
                 cmdP.close();
                 document.activeElement.blur();
+                document.getElementById("textarea").focus();
             } else {
                 selected_index = 0;
                 handleSearch();
@@ -370,15 +336,19 @@
 
         let handleSearch = () => {
             let notes = findNotes();
+            let commands = findCommands();
+            let total = [...notes, ...commands];
+
             if (max_selected == -1) {
                 selected_index = 0;
             }
-            max_selected = notes.length - 1;
+            max_selected = total.length - 1;
 
             if (selected_index > max_selected) {
-                selected_index = notes.length - 1;
+                selected_index = total.length - 1;
             }
-            addNotesToCmdP(notes);
+
+            addToCmdP(total);
         }
 
         let findNotes = () => {
@@ -403,7 +373,20 @@
             return notes
         }
 
-        let addNotesToCmdP = (notes) => {
+        let findCommands = () => {
+            let search = document.getElementById("cmdP-input")
+            let cmds = [
+                
+            ];
+
+            if (search.value != "") {
+                cmds.push([">create", "Create Note: " + search.value, create_note]);
+            }
+
+            return cmds 
+        }
+
+        let addToCmdP = (notes) => {
             let notesArea = document.getElementById("notes");
 
             notesArea.innerHTML = "";
@@ -421,15 +404,46 @@
                 let name = document.createElement("p");
                 name.innerText = note[1];
                 name.classList.add("note-name");
-
-                let date = document.createElement("p");
-                date.innerText = new Date(parseInt(note[0])).toLocaleString().split(",")[0]
-                date.classList.add("note-creation-date");
-
                 div.appendChild(name);
-                div.appendChild(date);
+
+                if (note[0][0] != ">") {
+                    let date = document.createElement("p");
+                    date.innerText = new Date(parseInt(note[0])).toLocaleString().split(",")[0]
+                    date.classList.add("note-creation-date");
+                    div.appendChild(date);
+                }
+
                 notesArea.appendChild(div);
             }
+
+            notesArea.children[selected_index].scrollIntoView();    
+        }
+
+        let figureOutWhatToDo = (keyCode, selected_index) => {
+            let search = document.getElementById("cmdP-input");
+            let total = [...findNotes(), ...findCommands()];
+            let selected = total[selected_index];
+
+            if (keyCode == 13) {
+                if (selected[0][0] != ">") {
+                    change_current_note(selected[0]);
+                } else {
+                    switch (selected[0]) {
+                        case ">create": 
+                            selected[2](search.value);
+                            break;
+                        default:
+                            selected[2]();
+                            break;
+                    }
+                }
+
+                cmdPToggle();
+            } else if (keyCode == 46) {
+                delete_note(selected[0]);
+                cmdPToggle();
+            }
+
         }
 
     </script>
