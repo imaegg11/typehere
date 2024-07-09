@@ -40,7 +40,7 @@
             position: fixed;
             z-index: 2;
             width: 30%;
-            max-height: 30%;
+            max-height: 15rem;
             background-color: inherit;
 
             border-style: none;
@@ -78,7 +78,8 @@
         }
 
         #notes {
-            height: 77%;
+            height: max-content;
+            max-height: 10rem;
             overflow-y: auto;
             scrollbar-width: none;
             margin: 0 auto;
@@ -93,18 +94,23 @@
             justify-content: space-between;
             align-items: center;
             height: 2rem;
+            border-radius: 10px;
         }
 
         .note-creation-date {
-            margin: 0;
+            margin: 0 0.5rem;
         }
 
         .note-name {
-            margin: 0;
+            margin: 0 0.5rem;
             width: 50%;
             text-overflow: ellipsis;
             overflow-x: hidden;
             white-space: nowrap; 
+        }
+
+        .selected {
+            background-color: rgba(0, 0, 0, 0.1);
         }
 
 	</style>
@@ -113,11 +119,11 @@
         <textarea id="textarea"></textarea>
         <dialog class="hidden" id="cmdP">
             <div>
-                <input id="cmdP-input" type="text" placeholder="Search for notes">
+                <input id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">
                 <p id="notes-text">NOTES</p>
             </div>
             <div id="notes">
-                <div class="note">
+                <!-- <div class="note">
                     <p class="note-name">Default</p>
                     <p class="note-creation-date">07/07/2024</p>
                 </div>
@@ -137,6 +143,22 @@
                     <p class="note-name">Default</p>
                     <p class="note-creation-date">07/07/2024</p>
                 </div>
+                <div class="note">
+                    <p class="note-name">Default</p>
+                    <p class="note-creation-date">07/07/2024</p>
+                </div>
+                <div class="note">
+                    <p class="note-name">Default</p>
+                    <p class="note-creation-date">07/07/2024</p>
+                </div>
+                <div class="note">
+                    <p class="note-name">Default</p>
+                    <p class="note-creation-date">07/07/2024</p>
+                </div>
+                <div class="note">
+                    <p class="note-name">Default</p>
+                    <p class="note-creation-date">07/07/2024</p>
+                </div> -->
             </div>
         </dialog>
     </body>
@@ -149,7 +171,9 @@
 
         // Key Presses
 
-        let last_key_press = null;
+        let cmdPOpen = false;
+        let selected_index = 0;
+        let max_selected = 0
 
         document.addEventListener("keydown", (e) => {
             if (e.ctrlKey) {
@@ -159,29 +183,29 @@
                         e.preventDefault();
                         break;
                 }
-            }
+            } else if (cmdPOpen) {
+                switch (e.keyCode) {
+                    case 27:
+                        cmdPToggle();
+                        break;
+                    case 40:
+                        selected_index = Math.min(selected_index + 1, max_selected);
+                        handleSearch();
+                        break;
+                    case 38:
+                        selected_index = Math.max(selected_index - 1, 0);
+                        handleSearch();
+                        break;
+                    case 13: 
+                        change_current_note(Object.keys(note_keys)[selected_index][0]);
+                        cmdPToggle();
+                        break;
 
-            last_key_press = e.keyCode;
+                }
+            } 
 
             // print(e);
         });
-	
-        // Modal 
-
-        let cmdPToggle = () => {
-            let cmdP = document.getElementById("cmdP");
-            let inp = document.getElementById("cmdP-input")
-            if (cmdP.open) {
-                cmdP.close();
-                document.activeElement.blur();
-            } else {
-                cmdP.showModal();
-            }
-
-            cmdP.classList.toggle("hidden");
-        }       
-
-
 
         // DB stuff
 
@@ -324,6 +348,88 @@
 
         window.onload = (e) => {
             open_db();
+        }
+	
+        // Modal 
+
+        let cmdPToggle = () => {
+            let cmdP = document.getElementById("cmdP");
+            let inp = document.getElementById("cmdP-input")
+            if (cmdP.open) {
+                cmdP.close();
+                document.activeElement.blur();
+            } else {
+                selected_index = 0;
+                handleSearch();
+                cmdP.showModal();
+            }
+
+            cmdP.classList.toggle("hidden");
+            cmdPOpen = !cmdPOpen;
+        }       
+
+        let handleSearch = () => {
+            let notes = findNotes();
+            if (max_selected == -1) {
+                selected_index = 0;
+            }
+            max_selected = notes.length - 1;
+
+            if (selected_index > max_selected) {
+                selected_index = notes.length - 1;
+            }
+            addNotesToCmdP(notes);
+        }
+
+        let findNotes = () => {
+            let search = document.getElementById("cmdP-input");
+            let notes = [];
+            if (search.value == "") {
+                for (let key of Object.keys(note_keys)) {
+                    notes.push([]);
+                    notes[notes.length - 1].push(key);
+                    notes[notes.length - 1].push(note_keys[key])
+                }
+            } else {
+                for (let key of Object.keys(note_keys)) {
+                    if (note_keys[key].includes(search.value)) {
+                        notes.push([]);
+                        notes[notes.length - 1].push(key);
+                        notes[notes.length - 1].push(note_keys[key])
+                    }
+                }
+            }
+
+            return notes
+        }
+
+        let addNotesToCmdP = (notes) => {
+            let notesArea = document.getElementById("notes");
+
+            notesArea.innerHTML = "";
+
+            for (let i = 0; i < notes.length; i++) {
+                let note = notes[i];
+
+                let div = document.createElement("div");
+                div.classList.add("note");
+
+                if (i == selected_index) {
+                    div.classList.add("selected")
+                }
+                
+                let name = document.createElement("p");
+                name.innerText = note[1];
+                name.classList.add("note-name");
+
+                let date = document.createElement("p");
+                date.innerText = new Date(parseInt(note[0])).toLocaleString().split(",")[0]
+                date.classList.add("note-creation-date");
+
+                div.appendChild(name);
+                div.appendChild(date);
+                notesArea.appendChild(div);
+            }
         }
 
     </script>
