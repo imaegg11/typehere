@@ -5,6 +5,8 @@
     --bg: #f2f3f5;
     --search-bg: #dfe0e2;
     --selected-bg: rgba(0, 0, 0, 0.1);
+
+    --bottom-height: 2.3rem;
 }
 
 .color {
@@ -14,7 +16,7 @@
 
 #textarea {
     width: 100%;
-    height: calc(100% - 2.3rem);
+    height: calc(100% - var(--bottom-height));
     font-size: 1.3rem;
     outline: none;
     border: none; 
@@ -134,9 +136,15 @@ body {
     color: inherit;
     font-size: 1rem;
     width: 50%;
-    
+    text-overflow: ellipsis;
+    overflow: hidden;
     border: none;
     background: transparent;
+}
+
+.height-zero {
+    height: 0 !important;
+    display: none !important;
 }
 
 #current-note-name:active, #current-note-name:focus {

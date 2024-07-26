@@ -5,14 +5,26 @@ let print = (s) => { // Pov python user moment
 // Key Presses
 
 let cmdPOpen = false;
+let detailsOpen = true;
 let selected_index = 0;
 let max_selected = 0
+
+let toggleDetails = () => {
+    let bottom = document.getElementById("bottom");
+    bottom.classList.toggle("height-zero");
+    document.documentElement.style.setProperty('--bottom-height', detailsOpen ? "0rem" : "2.3rem");
+    detailsOpen = !detailsOpen;
+}
 
 document.addEventListener("keydown", (e) => {
     if (e.ctrlKey) {
         switch (e.keyCode) {
             case 75: // K key
                 cmdPToggle();
+                e.preventDefault();
+                break;
+            case 66: // B Key
+                toggleDetails();
                 e.preventDefault();
                 break;
         }
@@ -105,6 +117,25 @@ let writeToStorageContent = (key, name, text, edited_data) => {
     }
 }
 
+let update_name = () => {
+    let name = document.getElementById("current-note-name")
+    let v = name.value;
+
+    let request = readFromStorage(current_key)
+
+    request.onsuccess = (e) => {
+        result = e.target.result;
+        writeToStorageContent(result.key, v, result.content, result.last_edited);
+        note_keys[result.key][0] = v;
+        writeToStorageNoteKeys();
+        print(note_keys)
+    }
+
+    request.onerror = (e) => {
+        console.error(e);
+    }
+}
+
 let readFromStorage = (key) => {
     const tx = db.transaction("storage", "readwrite");
     const store = tx.objectStore("storage");
@@ -136,6 +167,7 @@ let updateTextArea = () => {
 
     request.onsuccess = (e) => {
         textarea.value = e.target.result.content;
+        document.getElementById("current-note-name").value = note_keys[current_key][0]
     }
 
     request.onerror = (e) => {
@@ -243,6 +275,7 @@ let findNotes = () => {
 
     for (let key of Object.keys(note_keys)) {
         if (search.value == "" || note_keys[key][0].includes(search.value)) {
+            print(note_keys)
             notes.push([]);
             notes[notes.length - 1].push(key);
             notes[notes.length - 1].push(note_keys[key][0])
@@ -399,6 +432,7 @@ let check_settings = () => {
 window.onload = (e) => {
 
     document.getElementById("textarea").focus();
+    toggleDetails();
 
     check_settings()
     if (localStorage["isLightTheme"] === "false") {
