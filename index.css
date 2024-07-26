@@ -1,24 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
-    --light-bg: #f2f3f5;
-    --light-text: #0f0f0f;
-    --light-search-bg: #dfe0e2;
-
-    --dark-bg: #2b2d31; 
-    --dark-text: #cacaca;
-    --dark-search-bg: #1c1d1e;
-
-    --custom-bg: #ffffff;
-    --custom-text:  #ffffff;
-    --custom-search-bg:  #ffffff;
-
-    --selected-value: 0;
-
     --text: #0f0f0f;
     --bg: #f2f3f5;
     --search-bg: #dfe0e2;
-
+    --selected-bg: rgba(0, 0, 0, 0.1);
 }
 
 .color {
@@ -114,7 +100,7 @@ body {
 
 .note-creation-date {
     margin: 0 0.7rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     filter: brightness(0.9);
 }
 
@@ -128,7 +114,7 @@ body {
 }
 
 .color-selected {
-    background-color: var(--selected-bg)
+    background-color: var(--selected-bg);
 }
 
 #bottom {

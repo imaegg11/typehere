@@ -88,11 +88,12 @@ let writeToStorageNoteKeys = () => {
     }
 }
 
-let writeToStorageContent = (key, name, text) => {
+let writeToStorageContent = (key, name, text, edited_data) => {
     let item = {
         "key": key,
         "name": name,
-        "content": text 
+        "content": text,
+        "last_edited": edited_data
     }
 
     const tx = db.transaction("storage", "readwrite");
@@ -124,7 +125,9 @@ let deleteFromStorage = (key) => {
 
 let updateStorage = () => {
     let textarea = document.getElementById("textarea");
-    writeToStorageContent(current_key, note_keys[current_key], textarea.value);
+    let edit = Date.now();
+    note_keys[current_key][1] = edit
+    writeToStorageContent(current_key, note_keys[current_key][0], textarea.value, edit);
 }
 
 let updateTextArea = () => {
@@ -158,7 +161,7 @@ let delete_note = (key) => {
     
     default_key = find_default()
     if (key == default_key) {
-        writeToStorageContent(default_key, note_keys[default_key], "");
+        writeToStorageContent(default_key, note_keys[default_key][0], "", Date.now());
         updateTextArea();
         return
     }
@@ -172,8 +175,9 @@ let delete_note = (key) => {
 
 let create_note = (name) => {
     let key = Date.now().toString();
-    writeToStorageContent(key, name, "");
-    note_keys[key] = name;
+    let edit = Date.now()
+    writeToStorageContent(key, name, "", edit);
+    note_keys[key] = [name, edit];
     writeToStorageNoteKeys();
 
     change_current_note(key);
@@ -205,6 +209,10 @@ let cmdPToggle = () => {
         selected_index = 0;
         handleSearch();
         cmdP.showModal();
+        document.activeElement.blur();
+        setTimeout(() => {
+            document.getElementById("cmdP-input").focus();
+        }, 0);
     }
 
     cmdP.classList.toggle("hidden");
@@ -232,43 +240,55 @@ let handleSearch = () => {
 let findNotes = () => {
     let search = document.getElementById("cmdP-input");
     let notes = [];
-    if (search.value == "") {
-        for (let key of Object.keys(note_keys)) {
+
+    for (let key of Object.keys(note_keys)) {
+        if (search.value == "" || note_keys[key][0].includes(search.value)) {
             notes.push([]);
             notes[notes.length - 1].push(key);
-            notes[notes.length - 1].push(note_keys[key])
-        }
-    } else {
-        for (let key of Object.keys(note_keys)) {
-            if (note_keys[key].includes(search.value)) {
-                notes.push([]);
-                notes[notes.length - 1].push(key);
-                notes[notes.length - 1].push(note_keys[key])
-            }
+            notes[notes.length - 1].push(note_keys[key][0])
+            notes[notes.length - 1].push(note_keys[key][1])
         }
     }
 
     return notes
 }
 
-let switch_theme = () => {
-    document.body.classList.toggle("light");
-    document.body.classList.toggle("dark");
-    
-    document.getElementById("cmdP-input").classList.toggle("cmdP-input-dark");
-    document.getElementById("cmdP-input").classList.toggle("cmdP-input-light");
+let set_theme = (theme) => {
+
+    let themes = {
+        "light":{
+            "text": "#0f0f0f",
+            "bg": "#f2f3f5",
+            "search-bg": "#dfe0e2",
+            "selected-bg": "rgba(0, 0, 0, 0.1)",
+        }, 
+        "dark": {
+            "text": "#cacaca",
+            "bg": "#2b2d31",
+            "search-bg": "#1c1d1e",
+            "selected-bg": "rgba(255, 255, 255, 0.1)"
+        }
+    }
 
     let root = document.documentElement;
-    let cur = getComputedStyle(root).getPropertyValue("--selected-value");
-    root.style.setProperty("--selected-value", cur == "0" ? "255" : "0");
+    for (let key of Object.keys(themes[theme])) {
+        root.style.setProperty("--" + key, themes[theme][key]);
+    }
+}
 
-    localStorage["isLightTheme"] = document.body.classList.contains("light");
+let switch_theme = () => {
+    
+    localStorage["isLightTheme"] = (localStorage["isLightTheme"] == "true" ? "false" : "true")
+    let theme = localStorage["isLightTheme"] == "true" ? "light" : "dark"
+
+    set_theme(theme)
+
 }
 
 let findCommands = () => {
     let search = document.getElementById("cmdP-input")
     let searchCmds = [
-        [">toggle theme", `Toggle ${document.body.classList.contains("light") ? "Dark" : "Light"} Mode`, switch_theme]
+        [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme]
     ];
 
     let returnCmds = []
@@ -311,7 +331,7 @@ let addToCmdP = (notes) => {
 
         if (note[0][0] != ">") {
             let date = document.createElement("p");
-            date.innerText = new Date(parseInt(note[0])).toDateString().substring(4)
+            date.innerText = `${new Date(parseInt(note[2])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[2])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
             date.classList.add("note-creation-date");
             div.appendChild(date);
         }
@@ -319,13 +339,20 @@ let addToCmdP = (notes) => {
         notesArea.appendChild(div);
     }
 
-    notesArea.children[selected_index].scrollIntoView();    
+    if (selected_index != -1) {
+        notesArea.children[selected_index].scrollIntoView();    
+    }
 }
 
-let figureOutWhatToDo = (e, selected_index) => {
+let figureOutWhatToDo = (e, selected_index) => {   
     let search = document.getElementById("cmdP-input");
     let total = [...findNotes(), ...findCommands()];
     let selected = total[selected_index];
+
+    if (selected == undefined) {
+        return;
+    }
+
     let keyCode = e.keyCode;
 
     if (keyCode == 13) {
@@ -371,12 +398,12 @@ let check_settings = () => {
 
 window.onload = (e) => {
 
+    document.getElementById("textarea").focus();
+
     check_settings()
-
     if (localStorage["isLightTheme"] === "false") {
-        switch_theme();
+        set_theme("dark");
     }
-
 
     open_db();
 }
