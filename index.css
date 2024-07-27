@@ -5,8 +5,8 @@
     --bg: #f2f3f5;
     --search-bg: #dfe0e2;
     --selected-bg: rgba(0, 0, 0, 0.1);
-
-    --bottom-height: 2.3rem;
+    --bottom-bg: #212121;
+    --bottom-height: 0rem;
 }
 
 .color {
@@ -119,16 +119,20 @@ body {
     background-color: var(--selected-bg);
 }
 
+.color-bottom {
+    background-color: var(--bottom-bg);
+}
+
 #bottom {
     
     position: absolute;
-    bottom: 0.3rem;
-    left: 0.5rem;
+    bottom: 0;
     height: 2rem;
-    width: 90%;
+    width: 100%;
     
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 #current-note-name {
@@ -140,6 +144,13 @@ body {
     overflow: hidden;
     border: none;
     background: transparent;
+    margin-left: 0.5rem;
+}
+
+#details {
+    font-family: "Noto Sans";
+    font-size: 1rem;
+    margin-right: 0.5rem;
 }
 
 .height-zero {

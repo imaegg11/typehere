@@ -5,7 +5,7 @@ let print = (s) => { // Pov python user moment
 // Key Presses
 
 let cmdPOpen = false;
-let detailsOpen = true;
+let detailsOpen = false;
 let selected_index = 0;
 let max_selected = 0
 
@@ -14,6 +14,9 @@ let toggleDetails = () => {
     bottom.classList.toggle("height-zero");
     document.documentElement.style.setProperty('--bottom-height', detailsOpen ? "0rem" : "2.3rem");
     detailsOpen = !detailsOpen;
+
+    let note = [current_key, note_keys[current_key][1]]
+    document.getElementById("details").innerText = `${(new Blob([document.getElementById("textarea").value]).size/1000).toFixed(2)}kB - ${new Date(parseInt(note[1])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[1])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
 }
 
 document.addEventListener("keydown", (e) => {
@@ -128,13 +131,19 @@ let update_name = () => {
         writeToStorageContent(result.key, v, result.content, result.last_edited);
         note_keys[result.key][0] = v;
         writeToStorageNoteKeys();
-        print(note_keys)
     }
 
     request.onerror = (e) => {
         console.error(e);
     }
 }
+
+document.getElementById("current-note-name").addEventListener("focusout", (e) => {
+    // let name = document.getElementById("current-note-name");
+    // let value = name.value;
+    // name.outerHTML = name.outerHTML;
+    // name.value = value
+})
 
 let readFromStorage = (key) => {
     const tx = db.transaction("storage", "readwrite");
@@ -167,7 +176,9 @@ let updateTextArea = () => {
 
     request.onsuccess = (e) => {
         textarea.value = e.target.result.content;
-        document.getElementById("current-note-name").value = note_keys[current_key][0]
+        document.getElementById("current-note-name").value = note_keys[current_key][0];
+        let note = [current_key, note_keys[current_key][1]]
+        document.getElementById("details").innerText = `${(new Blob([document.getElementById("textarea").value]).size/1000).toFixed(2)}kB - ${new Date(parseInt(note[1])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[1])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
     }
 
     request.onerror = (e) => {
@@ -275,7 +286,6 @@ let findNotes = () => {
 
     for (let key of Object.keys(note_keys)) {
         if (search.value == "" || note_keys[key][0].includes(search.value)) {
-            print(note_keys)
             notes.push([]);
             notes[notes.length - 1].push(key);
             notes[notes.length - 1].push(note_keys[key][0])
@@ -294,12 +304,14 @@ let set_theme = (theme) => {
             "bg": "#f2f3f5",
             "search-bg": "#dfe0e2",
             "selected-bg": "rgba(0, 0, 0, 0.1)",
+            "bottom-bg": "#cecece"
         }, 
         "dark": {
             "text": "#cacaca",
             "bg": "#2b2d31",
             "search-bg": "#1c1d1e",
-            "selected-bg": "rgba(255, 255, 255, 0.1)"
+            "selected-bg": "rgba(255, 255, 255, 0.1)",
+            "bottom-bg": "#212121"
         }
     }
 
@@ -432,7 +444,6 @@ let check_settings = () => {
 window.onload = (e) => {
 
     document.getElementById("textarea").focus();
-    toggleDetails();
 
     check_settings()
     if (localStorage["isLightTheme"] === "false") {
