@@ -45,7 +45,6 @@ body {
     color: inherit;
 
     border-style: none;
-    border-width: 0.05rem;
     border-radius: 10px;
 
     display: grid;
@@ -169,4 +168,47 @@ body {
 
 .small-width {
     padding: 1rem 20% !important;
+}
+
+#settings {
+    width: 50%;
+    height: 60%;
+
+    color: inherit;
+
+    border: none;
+    border-radius: 10px;
+    background-color: inherit;
+
+    display: grid;
+    grid-template-columns: 30% 70%;
+}
+
+#settings::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.settings-list-value {
+    color: inherit;
+    text-align: center;
+    margin: 0.1rem 0;
+    padding: 0.8rem 0;
+}
+
+.settings-list-value:hover {
+    background-color: var(--selected-bg);
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#settings-list {
+    height: 100%;
+    padding-right: 0.8rem;
+}
+
+#settings-list-content {
+    height: 100%;
+    border-left-style: solid;
+    border-left-color: var(--selected-bg);
+    border-left-width: 1px;
 }

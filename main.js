@@ -5,6 +5,7 @@ let print = (s) => { // Pov python user moment
 // Key Presses
 
 let cmdPOpen = false;
+let settingsOpen = false;
 let detailsOpen = false;
 let selected_index = 0;
 let max_selected = 0
@@ -28,6 +29,10 @@ document.addEventListener("keydown", (e) => {
                 break;
             case 66: // B Key
                 toggleDetails();
+                e.preventDefault();
+                break;
+            case 190: // . Key
+                toggle_settings();
                 e.preventDefault();
                 break;
         }
@@ -124,15 +129,6 @@ let update_name = (e) => {
     if (e.target.selectionStart == 0 && e.keyCode == 190) {
         e.preventDefault();
         return;
-    } else if (e.keyCode == 27 || e.keyCode == 13) {
-        if (!cmdPOpen) {
-            setTimeout(() => {
-                document.getElementById("textarea").focus();
-            }, 0);
-        }
-        document.activeElement.blur();
-        e.preventDefault();
-        return;
     }
 
     let name = document.getElementById("current-note-name")
@@ -150,6 +146,16 @@ let update_name = (e) => {
 
     request.onerror = (e) => {
         console.error(e);
+    }
+
+    if (e.keyCode == 27 || e.keyCode == 13) {
+        if (!cmdPOpen) {
+            setTimeout(() => {
+                document.getElementById("textarea").focus();
+            }, 0);
+        }
+        document.activeElement.blur();
+        e.preventDefault();
     }
 }
 
@@ -349,21 +355,25 @@ let set_theme = (theme) => {
 
 let switch_theme = () => {
     
-    localStorage["isLightTheme"] = (localStorage["isLightTheme"] == "true" ? "false" : "true")
-    let theme = localStorage["isLightTheme"] == "true" ? "light" : "dark"
-
+    let theme = localStorage["isLightTheme"] == "true" ? "dark" : "light"
+    
     set_theme(theme)
+    localStorage["isLightTheme"] = (localStorage["isLightTheme"] == "true" ? "false" : "true")
 
 }
 
 let toggle_scrollbar = () => {
     let textarea = document.getElementById("textarea")
     textarea.classList.toggle("hide-scrollbar");
+
+    localStorage["scrollbarActive"] = (localStorage["scrollbarActive"] == "true" ? "false" : "true")
 }
 
-let toggle_small_width = () => {
+let toggle_fullwidth = () => {
     let textarea = document.getElementById("textarea")
     textarea.classList.toggle("small-width");
+
+    localStorage["fullWidth"] = (localStorage["fullWidth"] == "true" ? "false" : "true")
 }
 
 let findCommands = () => {
@@ -371,7 +381,7 @@ let findCommands = () => {
     let searchCmds = [
         [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme],
         [">toggle scrollbar", "Toggle Scrollbar", toggle_scrollbar],
-        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_small_width]
+        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_fullwidth]
     ];
 
     let returnCmds = []
@@ -469,13 +479,32 @@ let add_tab = (e) => {
 
 // Settings 
 
-let check_settings = () => {
-    required_settings = [["isLightTheme", true]]
+let check_and_set_settings = () => {
+    required_settings = [["isLightTheme", true, switch_theme], ["scrollbarActive", true, toggle_scrollbar], ["fullWidth", true, toggle_fullwidth]]
     for (let setting of required_settings) {
         if (localStorage[setting[0]] == null) {
             localStorage[setting[0]] = setting[1]
+        } else if (localStorage[setting[0]] === "false") {
+            localStorage[setting[0]] = "true";
+            setting[2]();
         }
     }
+}
+
+let toggle_settings = () => {
+    let settings = document.getElementById("settings");
+    if (settingsOpen) {
+        settings.close();
+        document.activeElement.blur();
+        document.getElementById("textarea").focus();
+    } else {
+        settings.showModal();
+        document.activeElement.blur();
+        
+    }
+
+    settings.classList.toggle("hidden");
+    settingsOpen = !settingsOpen
 }
 
 // Onload
@@ -483,11 +512,7 @@ let check_settings = () => {
 window.onload = (e) => {
 
     document.getElementById("textarea").focus();
-
-    check_settings()
-    if (localStorage["isLightTheme"] === "false") {
-        set_theme("dark");
-    }
+    check_and_set_settings();
 
     open_db();
 }
