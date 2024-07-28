@@ -107,7 +107,7 @@ body {
 }
 
 .note-name {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     margin: 0 0.7rem;
     width: 100%;
     text-overflow: ellipsis;
@@ -161,4 +161,12 @@ body {
 #current-note-name:active, #current-note-name:focus {
     border: none;
     outline: none;
+}
+
+.hide-scrollbar {
+    scrollbar-width: none;
+}
+
+.small-width {
+    padding: 1rem 20% !important;
 }

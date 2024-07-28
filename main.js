@@ -23,7 +23,7 @@ document.addEventListener("keydown", (e) => {
     if (e.ctrlKey) {
         switch (e.keyCode) {
             case 75: // K key
-                cmdPToggle();
+                cmdPToggle(e.shiftKey);
                 e.preventDefault();
                 break;
             case 66: // B Key
@@ -120,9 +120,24 @@ let writeToStorageContent = (key, name, text, edited_data) => {
     }
 }
 
-let update_name = () => {
+let update_name = (e) => {
+    if (e.target.selectionStart == 0 && e.keyCode == 190) {
+        e.preventDefault();
+        return;
+    } else if (e.keyCode == 27 || e.keyCode == 13) {
+        if (!cmdPOpen) {
+            setTimeout(() => {
+                document.getElementById("textarea").focus();
+            }, 0);
+        }
+        document.activeElement.blur();
+        e.preventDefault();
+        return;
+    }
+
     let name = document.getElementById("current-note-name")
     let v = name.value;
+
 
     let request = readFromStorage(current_key)
 
@@ -139,10 +154,7 @@ let update_name = () => {
 }
 
 document.getElementById("current-note-name").addEventListener("focusout", (e) => {
-    // let name = document.getElementById("current-note-name");
-    // let value = name.value;
-    // name.outerHTML = name.outerHTML;
-    // name.value = value
+    document.getElementById("current-note-name").setSelectionRange(0, 0);
 })
 
 let readFromStorage = (key) => {
@@ -240,7 +252,7 @@ let updateNoteKeys = () => {
 
 // Modal 
 
-let cmdPToggle = () => {
+let cmdPToggle = (shift_key) => {
     let cmdP = document.getElementById("cmdP");
     let inp = document.getElementById("cmdP-input")
     if (cmdP.open) {
@@ -250,12 +262,19 @@ let cmdPToggle = () => {
         document.getElementById("textarea").focus();
     } else {
         selected_index = 0;
-        handleSearch();
         cmdP.showModal();
         document.activeElement.blur();
+        
+        if (shift_key) {
+            document.getElementById("cmdP-input").value = ">";
+        }
+        
+        handleSearch();
+
         setTimeout(() => {
             document.getElementById("cmdP-input").focus();
         }, 0);
+
     }
 
     cmdP.classList.toggle("hidden");
@@ -263,6 +282,13 @@ let cmdPToggle = () => {
 }       
 
 let handleSearch = () => {
+
+    if (document.getElementById("cmdP-input").value[0] == ">") {
+        document.getElementById("notes-text").innerText = "Commands"
+    } else {
+        document.getElementById("notes-text").innerText = "Quick Access"
+    }
+
     let notes = findNotes();
     let commands = findCommands();
     let total = [...notes, ...commands];
@@ -330,10 +356,22 @@ let switch_theme = () => {
 
 }
 
+let toggle_scrollbar = () => {
+    let textarea = document.getElementById("textarea")
+    textarea.classList.toggle("hide-scrollbar");
+}
+
+let toggle_small_width = () => {
+    let textarea = document.getElementById("textarea")
+    textarea.classList.toggle("small-width");
+}
+
 let findCommands = () => {
     let search = document.getElementById("cmdP-input")
     let searchCmds = [
-        [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme]
+        [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme],
+        [">toggle scrollbar", "Toggle Scrollbar", toggle_scrollbar],
+        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_small_width]
     ];
 
     let returnCmds = []
@@ -413,9 +451,10 @@ let figureOutWhatToDo = (e, selected_index) => {
                     break;
             }
         }
-
+        e.preventDefault();
         cmdPToggle();
     } else if (selected[0][0] != ">" && e.altKey && (keyCode == 46 || keyCode == 8)) {
+        e.preventDefault();
         delete_note(selected[0]);
         cmdPToggle();
     }
