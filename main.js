@@ -480,7 +480,11 @@ let add_tab = (e) => {
 // Settings 
 
 let check_and_set_settings = () => {
-    required_settings = [["isLightTheme", true, switch_theme], ["scrollbarActive", true, toggle_scrollbar], ["fullWidth", true, toggle_fullwidth]]
+    required_settings = [
+                        ["isLightTheme", true, switch_theme], 
+                        ["scrollbarActive", true, toggle_scrollbar], 
+                        ["fullWidth", true, toggle_fullwidth]
+                    ]
     for (let setting of required_settings) {
         if (localStorage[setting[0]] == null) {
             localStorage[setting[0]] = setting[1]
@@ -491,6 +495,35 @@ let check_and_set_settings = () => {
     }
 }
 
+const settings = {
+    "Appearance": {
+        "Scrollbar": ["Show Scrollbar", "checkmark", localStorage["scrollbarActive"], toggle_scrollbar]
+    },
+    "Settings Menu 2": {},
+    "Settings Menu 3": {},
+    "Settings Menu 4": {},
+    "Settings Menu 5": {},
+    "Settings Menu 6": {},
+}
+
+let load_settings_into_settings_page = () => {
+    let settings_pages = Object.keys(settings);
+    let parent = document.getElementById("settings-list");
+    for (let name of settings_pages) {
+        let child = document.createElement("p");
+        child.classList.add("settings-list-value");
+        child.innerText = name;
+        parent.appendChild(child);
+    }
+}
+
+let load_setting_contents_into_settings_page = (shown_settings) => {
+    let parent = document.getElementById("")
+    for (setting of shown_settings) {
+        
+    }
+}
+
 let toggle_settings = () => {
     let settings = document.getElementById("settings");
     if (settingsOpen) {
@@ -498,6 +531,7 @@ let toggle_settings = () => {
         document.activeElement.blur();
         document.getElementById("textarea").focus();
     } else {
+        load_settings_into_settings_page();
         settings.showModal();
         document.activeElement.blur();
         
