@@ -1,26 +1,33 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="index.css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                corePlugins: {
+                    preflight: false,
+                },
+                darkMode: 'selector'
+            }
+        </script>
     </head>
-    <body class="color">
-        <textarea onkeydown="updateStorage()" id="textarea"></textarea>
-        <dialog class="hidden" tabindex="-1" id="cmdP">
+    <body class="color m-0">
+        <textarea onkeydown="updateStorage()" id="textarea" class="font-mono w-full outline-none border-none resize-none m-0 bg-inherit p-4 text-lg"></textarea>
+        <dialog class="hidden fixed z-10 w-2/6 max-h-64 bg-inherit text-inherit border-none rounded-lg grid auto-rows-min overflow-y-hidden p-4" tabindex="-1" id="cmdP">
             <div>
-                <input class="color-cmdP" id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">
-                <p id="notes-text">Quick Access</p>
+                <input class="color-cmdP w-full h-12 px-5 py-3 text-base rounded-lg outline-none" id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">
+                <p id="notes-text" class="text-sm mx-auto my-2 select-none w-11/12">Quick Access</p>
             </div>
-            <div id="notes">
-            </div>
+            <div id="notes" class="h-max max-h-40 overflow-y-auto my-0 mx-auto w-[95%]"></div>
         </dialog>
-        <dialog class="hidden" id="settings" tabindex="-1">
+        <dialog class="hidden p-4" id="settings" tabindex="-1">
             <div id="settings-list">
             </div>
             <div id="settings-list-content">
                 <div class="settings-list-content-item">
                     <p class="settings-list-content-item">Show Scrollbar</p>
-                    <label class="switch">
-                        <input class="checkbox" type="checkbox">
-                        <span class="slider"></span>
+                    <input class="toggle toggle-info" type="checkbox">
                     </label>                    
                 </div>
             </div>

@@ -56,7 +56,13 @@ document.addEventListener("keydown", (e) => {
                 break;
 
         }
-    } 
+    } else if (settingsOpen) {
+        switch (e.keyCode) {
+            case 27:  // Esc key
+                toggle_settings();
+                break;
+        }
+    }
 
     // print(e);
 });
