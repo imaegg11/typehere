@@ -408,6 +408,14 @@ let findCommands = () => {
     return returnCmds 
 }
 
+let add_tailwind_classes = (e, classes) => {
+    for (let cl of classes) {
+        e.classList.add(cl);
+    }
+
+    return e;
+}
+
 let addToCmdP = (notes) => {
     let notesArea = document.getElementById("notes");
 
@@ -417,7 +425,16 @@ let addToCmdP = (notes) => {
         let note = notes[i];
 
         let div = document.createElement("div");
-        div.classList.add("note");
+
+        div = add_tailwind_classes(div, [
+            "w-full",
+            "select-none",
+            "flex", 
+            "items-center", 
+            "flex-wrap",
+            "h-11",
+            "rounded-lg"
+        ])
 
         if (i == selected_index) {
             div.classList.add("color-selected")
@@ -425,13 +442,27 @@ let addToCmdP = (notes) => {
         
         let name = document.createElement("p");
         name.innerText = note[1];
-        name.classList.add("note-name");
+        name = add_tailwind_classes(name, [
+            "text-[0.8rem]",
+            "my-0", 
+            "mx-[0.7rem]",
+            "text-ellipsis", 
+            "overflow-x-hidden",
+            "whitespace-nowrap",
+            "w-full"
+        ])
         div.appendChild(name);
 
         if (note[0][0] != ">") {
             let date = document.createElement("p");
             date.innerText = `${new Date(parseInt(note[2])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[2])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
             date.classList.add("note-creation-date");
+            date = add_tailwind_classes(date, [
+                "my-0", 
+                "mx-[0.7rem]",
+                "text-[0.7rem]",
+                "brightness-90"
+            ])
             div.appendChild(date);
         }
 

@@ -9,55 +9,22 @@
     --bottom-height: 0rem;
 }
 
-.color {
-    color: var(--text);
-    background-color: var(--bg);
-}
-
-#textarea {
-    height: calc(100% - var(--bottom-height));
-}
-
 body {
     font-family: "Noto Sans" !important;
-}
-
-.color-cmdP {
-    color: var(--text);
-    background: var(--search-bg)
-}
-
-.hidden {
-    display: none !important;
 }
 
 dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.note {
-    width: 100%;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    height: 2.8rem;
-    border-radius: 5px;
+.color {
+    color: var(--text);
+    background-color: var(--bg);
 }
 
-.note-creation-date {
-    margin: 0 0.7rem;
-    font-size: 0.7rem;
-    filter: brightness(0.9);
-}
-
-.note-name {
-    font-size: 0.8rem;
-    margin: 0 0.7rem;
-    width: 100%;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    white-space: nowrap;
+.color-cmdP {
+    color: var(--text);
+    background: var(--search-bg)
 }
 
 .color-selected {
@@ -68,45 +35,17 @@ dialog::backdrop {
     background-color: var(--bottom-bg);
 }
 
-#bottom {
-
-    position: absolute;
-    bottom: 0;
-    height: 2rem;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+#textarea {
+    height: calc(100% - var(--bottom-height));
 }
 
-#current-note-name {
-    font-family: "Noto Sans";
-    color: inherit;
-    font-size: 1rem;
-    width: 50%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    border: none;
-    background: transparent;
-    margin-left: 0.5rem;
-}
-
-#details {
-    font-family: "Noto Sans";
-    font-size: 1rem;
-    margin-right: 0.5rem;
+.hidden {
+    display: none !important;
 }
 
 .height-zero {
     height: 0 !important;
     display: none !important;
-}
-
-#current-note-name:active,
-#current-note-name:focus {
-    border: none;
-    outline: none;
 }
 
 .hide-scrollbar {
@@ -115,24 +54,6 @@ dialog::backdrop {
 
 .small-width {
     padding: 1rem 20% !important;
-}
-
-#settings {
-    width: 50%;
-    height: 60%;
-
-    color: inherit;
-
-    border: none;
-    border-radius: 10px;
-    background-color: inherit;
-
-    display: grid;
-    grid-template-columns: 30% 70%;
-}
-
-#settings::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .settings-list-value {
@@ -148,19 +69,14 @@ dialog::backdrop {
     border-radius: 5px;
 }
 
-#settings-list {
-    height: 100%;
-    padding-right: 0.8rem;
-}
-
 #settings-list-content {
-    height: 100%;
+
     border-left-style: solid;
     border-left-color: var(--selected-bg);
     border-left-width: 1px;
 
     padding-left: calc(0.8rem + 13%);
-    padding-right: 13%;
+
 }
 
 .settings-list-content-item {

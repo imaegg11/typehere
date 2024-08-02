@@ -6,25 +6,30 @@
         <script>
             tailwind.config = {
                 corePlugins: {
-                    preflight: false,
+                    preflight: fal,
                 },
-                darkMode: 'selector'
+                theme: {
+                    fontFamily: {
+                        "noto": ["Noto Sans"]
+                    }
+                }
             }
         </script>
     </head>
     <body class="color m-0">
         <textarea onkeydown="updateStorage()" id="textarea" class="font-mono w-full outline-none border-none resize-none m-0 bg-inherit p-4 text-lg"></textarea>
-        <dialog class="hidden fixed z-10 w-2/6 max-h-64 bg-inherit text-inherit border-none rounded-lg grid auto-rows-min overflow-y-hidden p-4" tabindex="-1" id="cmdP">
+        <dialog class="hidden fixed z-10 w-2/6 max-h-72 bg-inherit text-inherit border-none rounded-lg grid auto-rows-min overflow-y-hidden p-4" tabindex="-1" id="cmdP">
             <div>
                 <input class="color-cmdP w-full h-12 px-5 py-3 text-base rounded-lg outline-none" id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">
                 <p id="notes-text" class="text-sm mx-auto my-2 select-none w-11/12">Quick Access</p>
             </div>
-            <div id="notes" class="h-max max-h-40 overflow-y-auto my-0 mx-auto w-[95%]"></div>
+            <div id="notes" class="hide-scrollbar h-max max-h-40 overflow-y-auto my-0 mx-auto w-[95%]"></div>
         </dialog>
-        <dialog class="hidden p-4" id="settings" tabindex="-1">
-            <div id="settings-list">
+        <dialog class="hidden p-4 w-1/2 h-3/5 text-inherit border-none bg-inherit rounded-lg grid grid-cols-[30%_70%]" id="settings" tabindex="-1">
+            <div id="settings-list" class="h-full p-[0.8rem]">
             </div>
-            <div id="settings-list-content">
+            <!-- <hr class="rotate-90 h-[90%]"> -->
+            <div id="settings-list-content" class="h-full">
                 <div class="settings-list-content-item">
                     <p class="settings-list-content-item">Show Scrollbar</p>
                     <input class="toggle toggle-info" type="checkbox">
@@ -32,9 +37,9 @@
                 </div>
             </div>
         </dialog>
-        <div id="bottom" class="color-bottom height-zero">
-            <input type="text" id="current-note-name" onkeydown="update_name(event)">
-            <p id="details"></p>
+        <div id="bottom" class="color-bottom height-zero h-[2.3rem] absolute bottom-0 w-full flex items-center justify-between">
+            <input type="text" id="current-note-name" class="text-inherit text-base w-1/2 text-ellipsis overflow-hidden border-none bg-transparent ml-2 active:border-none active:outline-none focus:border-none focus:outline-none" onkeydown="update_name(event)">
+            <p id="details" class="font-noto text-base mr-2"></p>
         </div>
     </body>
 
