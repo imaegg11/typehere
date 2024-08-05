@@ -532,9 +532,11 @@ let check_and_set_settings = () => {
     }
 }
 
-const settings = {
+let settings = {
     "Appearance": {
-        "Scrollbar": ["Show Scrollbar", "checkmark", localStorage["scrollbarActive"], toggle_scrollbar]
+        "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
+        "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
+        "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme]
     },
     "Settings Menu 2": {},
     "Settings Menu 3": {},
@@ -543,21 +545,91 @@ const settings = {
     "Settings Menu 6": {},
 }
 
-let load_settings_into_settings_page = () => {
-    let settings_pages = Object.keys(settings);
-    let parent = document.getElementById("settings-list");
-    for (let name of settings_pages) {
-        let child = document.createElement("p");
-        child.classList.add("settings-list-value");
-        child.innerText = name;
-        parent.appendChild(child);
+let update_settings = () => {
+    settings = {
+        "Appearance": {
+            "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
+            "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
+            "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme]
+        },
+        "Settings Menu 2": {},
+        "Settings Menu 3": {},
+        "Settings Menu 4": {},
+        "Settings Menu 5": {},
+        "Settings Menu 6": {},
     }
 }
 
+let load_settings_into_settings_page = () => {
+    update_settings();
+    
+    let settings_pages = Object.keys(settings);
+    let parent = document.getElementById("settings-list");
+    parent.innerHTML = "";
+    for (let name of settings_pages) {
+        let child = document.createElement("p");
+        child = add_tailwind_classes(child, [
+            "text-inherit",
+            "text-center",
+            "my-[0.1rem]",
+            "mx-0",
+            "py-[0.8rem]",
+            "px-0",
+            "rounded-lg",
+            "hover:bg-[var(--selected-bg)]",
+            "hover:cursor-pointer",
+            "select-none"
+        ])
+        child.innerText = name;
+        parent.appendChild(child);
+    }
+
+    load_setting_contents_into_settings_page(settings["Appearance"])
+}
+
 let load_setting_contents_into_settings_page = (shown_settings) => {
-    let parent = document.getElementById("")
-    for (setting of shown_settings) {
-        
+    let parent = document.getElementById("settings-list-content");
+    parent.innerHTML = "";
+    for (let key of Object.keys(shown_settings)) {
+        print(Object.keys(shown_settings))
+        let setting = shown_settings[key];
+        let div = document.createElement("div");
+        div = add_tailwind_classes(div, [
+            "flex",
+            "justify-between",
+            "items-center",
+            "my-4"
+        ])
+        let p = document.createElement("p");
+        p.innerText = setting[0];
+
+        let change = document.createElement("span");
+
+        switch (setting[1]) {
+            case "toggle":
+                let toggle = document.createElement("input");
+                toggle.setAttribute("type", "checkbox");
+                if (setting[2] == "true") {
+                    toggle.setAttribute("checked", "checked");
+                }
+
+                toggle = add_tailwind_classes(toggle, [
+                    "toggle",
+                    "toggle-info"
+                ])
+
+                toggle.addEventListener("click", (e) => {
+                    setting[3]();
+                });
+
+                change = toggle;
+                break;
+        }
+
+
+        div.appendChild(p);
+        div.appendChild(change);
+        parent.appendChild(div);
     }
 }
 

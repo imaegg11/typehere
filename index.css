@@ -55,32 +55,3 @@ dialog::backdrop {
 .small-width {
     padding: 1rem 20% !important;
 }
-
-.settings-list-value {
-    color: inherit;
-    text-align: center;
-    margin: 0.1rem 0;
-    padding: 0.8rem 0;
-}
-
-.settings-list-value:hover {
-    background-color: var(--selected-bg);
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-#settings-list-content {
-
-    border-left-style: solid;
-    border-left-color: var(--selected-bg);
-    border-left-width: 1px;
-
-    padding-left: calc(0.8rem + 13%);
-
-}
-
-.settings-list-content-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
