@@ -362,8 +362,8 @@ let set_theme = (theme) => {
 let switch_theme = () => {
     
     let theme = localStorage["isLightTheme"] == "true" ? "dark" : "light"
-    
     set_theme(theme)
+
     localStorage["isLightTheme"] = (localStorage["isLightTheme"] == "true" ? "false" : "true")
 
 }
@@ -382,12 +382,22 @@ let toggle_fullwidth = () => {
     localStorage["fullWidth"] = (localStorage["fullWidth"] == "true" ? "false" : "true")
 }
 
+let toggle_spellcheck = () => {
+    let textarea = document.getElementById("textarea");
+    let spellcheck = localStorage["spellcheckActive"] == "true" ? "false" : "true";
+
+    textarea.setAttribute("spellcheck", spellcheck);
+    localStorage["spellcheckActive"] = (localStorage["spellcheckActive"] == "true" ? "false" : "true");
+
+}
+
 let findCommands = () => {
     let search = document.getElementById("cmdP-input")
     let searchCmds = [
         [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme],
         [">toggle scrollbar", "Toggle Scrollbar", toggle_scrollbar],
-        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_fullwidth]
+        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_fullwidth],
+        [">toggle spellcheck", "Toggle Spellcheck", toggle_spellcheck]
     ];
 
     let returnCmds = []
@@ -520,7 +530,8 @@ let check_and_set_settings = () => {
     required_settings = [
                         ["isLightTheme", true, switch_theme], 
                         ["scrollbarActive", true, toggle_scrollbar], 
-                        ["fullWidth", true, toggle_fullwidth]
+                        ["fullWidth", true, toggle_fullwidth],
+                        ["spellcheckActive", true, toggle_spellcheck]
                     ]
     for (let setting of required_settings) {
         if (localStorage[setting[0]] == null) {
@@ -532,27 +543,73 @@ let check_and_set_settings = () => {
     }
 }
 
-let settings = {
-    "Appearance": {
-        "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
-        "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
-        "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme]
-    },
-    "Settings Menu 2": {},
-    "Settings Menu 3": {},
-    "Settings Menu 4": {},
-    "Settings Menu 5": {},
-    "Settings Menu 6": {},
+let download_file = (content, fileName, contentType) => {
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: contentType});
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
 }
+
+let export_settings = () => {
+    let settings = ["isLightTheme", "scrollbarActive", "fullWidth", "spellcheckActive"]
+    let obj = {}
+    for (let setting of settings) {
+        obj[setting] = localStorage[setting];
+    }
+
+    download_file(JSON.stringify(obj), "settings.json", "JSON")
+}
+
+let open_file = (callback_func) => {
+    let input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.click();
+
+    input.onchange = (e) => { 
+
+        let file = e.target.files[0]; 
+        let reader = new FileReader();
+        reader.readAsText(file,'UTF-8');
+        reader.onload = readerEvent => {
+           let content = readerEvent.target.result; 
+           callback_func(content);
+        }
+     
+    }
+}
+
+let load_settings_from_file = (content) => {
+    let obj = JSON.parse(content);
+    
+    for (let key of Object.keys(obj)) {
+        localStorage[key] = obj[key];
+    }
+
+    check_and_set_settings();
+    update_settings();
+}
+
+let import_settings = () => {
+    open_file(load_settings_from_file);
+}
+
+let settings = {}
 
 let update_settings = () => {
     settings = {
         "Appearance": {
             "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
             "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
-            "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme]
+            "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme],
+            "Spellcheck": ["Toggle Spellcheck", "toggle", localStorage["spellcheckActive"], toggle_spellcheck]
         },
-        "Settings Menu 2": {},
+        "Import Data": {
+            "Import Settings": ["Import Settings From A File", "button", "Import", import_settings],
+            "Import All": ["Import All From A File", "button", "Import"],
+            "Export Settings": ["Export Settings To A File", "button", "Export", export_settings],
+            "Export All": ["Export All To A File", "button", "Export"]
+        },
         "Settings Menu 3": {},
         "Settings Menu 4": {},
         "Settings Menu 5": {},
@@ -581,6 +638,11 @@ let load_settings_into_settings_page = () => {
             "select-none"
         ])
         child.innerText = name;
+
+        child.addEventListener("click", (e) => {
+            load_setting_contents_into_settings_page(settings[e.target.innerText])
+        })
+
         parent.appendChild(child);
     }
 
@@ -591,7 +653,6 @@ let load_setting_contents_into_settings_page = (shown_settings) => {
     let parent = document.getElementById("settings-list-content");
     parent.innerHTML = "";
     for (let key of Object.keys(shown_settings)) {
-        print(Object.keys(shown_settings))
         let setting = shown_settings[key];
         let div = document.createElement("div");
         div = add_tailwind_classes(div, [
@@ -623,6 +684,27 @@ let load_setting_contents_into_settings_page = (shown_settings) => {
                 });
 
                 change = toggle;
+                break;
+            case "button":
+                let button = document.createElement("button");
+                
+                button = add_tailwind_classes(button, [
+                    "btn",
+                    "btn-ghost",
+                    "btn-sm",
+                    "btn-active",
+                    "font-noto",
+                    "text-inherit",
+                    "font-normal"
+                ]);
+
+                button.innerText = setting[2]
+
+                button.addEventListener("click", (e) => {
+                    setting[3]();
+                })
+
+                change = button;
                 break;
         }
 
