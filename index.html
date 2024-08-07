@@ -17,7 +17,7 @@
         </script>
     </head>
     <body class="color m-0">
-        <textarea onkeydown="updateStorage()" id="textarea" class="font-mono w-full outline-none border-none resize-none m-0 bg-inherit p-4 text-lg"></textarea>
+        <textarea onkeydown="updateStorage(event)" id="textarea" class="font-mono w-full outline-none border-none resize-none m-0 bg-inherit p-4 text-lg"></textarea>
         <dialog class="hidden fixed z-10 w-2/6 max-h-72 bg-inherit text-inherit border-none rounded-lg grid auto-rows-min overflow-y-hidden p-4" tabindex="-1" id="cmdP">
             <div>
                 <input class="color-cmdP w-full h-12 px-5 py-3 text-base rounded-lg outline-none" id="cmdP-input" onkeyup="handleSearch()" type="text" placeholder="Search for notes">

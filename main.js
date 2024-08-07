@@ -187,7 +187,14 @@ let deleteFromStorage = (key) => {
     }
 }
 
-let updateStorage = () => {
+
+let updateStorage = (e) => {
+
+    if (e.keyCode == 9) {
+        add_tab(e);
+        e.preventDefault();
+    }
+
     let textarea = document.getElementById("textarea");
     let edit = Date.now();
     note_keys[current_key][1] = edit
@@ -359,19 +366,19 @@ let set_theme = (theme) => {
     }
 }
 
+
 let switch_theme = () => {
     
     let theme = localStorage["isLightTheme"] == "true" ? "dark" : "light"
     set_theme(theme)
-
+    
     localStorage["isLightTheme"] = (localStorage["isLightTheme"] == "true" ? "false" : "true")
-
 }
 
 let toggle_scrollbar = () => {
     let textarea = document.getElementById("textarea")
     textarea.classList.toggle("hide-scrollbar");
-
+    
     localStorage["scrollbarActive"] = (localStorage["scrollbarActive"] == "true" ? "false" : "true")
 }
 
@@ -385,20 +392,47 @@ let toggle_fullwidth = () => {
 let toggle_spellcheck = () => {
     let textarea = document.getElementById("textarea");
     let spellcheck = localStorage["spellcheckActive"] == "true" ? "false" : "true";
-
+    
     textarea.setAttribute("spellcheck", spellcheck);
     localStorage["spellcheckActive"] = (localStorage["spellcheckActive"] == "true" ? "false" : "true");
+    
+}
 
+const localStoarge_settings = {
+    "Change Theme": {
+        "Text": () => {return `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`},
+        "Function": switch_theme,
+        "localStorage": "isLightTheme",
+        "Default": true
+    },
+    "Toggle Scrollbar": {
+        "Text": () => {return "Toggle Scrollbar"},
+        "Function": toggle_scrollbar,
+        "localStorage": "scrollbarActive",
+        "Default": true
+    },
+    "Toggle Full Width": {
+        "Text": () => {return `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`},
+        "Function": toggle_fullwidth,
+        "localStorage": "fullWidth",
+        "Default": true
+    },
+    "Toggle Spellcheck": {
+        "Text": () => {return "Toggle Spellcheck"},
+        "Function": toggle_spellcheck,
+        "localStorage": "spellcheckActive",
+        "Default": true
+    },
 }
 
 let findCommands = () => {
     let search = document.getElementById("cmdP-input")
-    let searchCmds = [
-        [">toggle theme", `Toggle ${localStorage["isLightTheme"] == "true" ? "Dark" : "Light"} Mode`, switch_theme],
-        [">toggle scrollbar", "Toggle Scrollbar", toggle_scrollbar],
-        [">toggle small width", `Toggle ${document.getElementById("textarea").classList.contains("small-width") ? "Full" : "Small"} Width`, toggle_fullwidth],
-        [">toggle spellcheck", "Toggle Spellcheck", toggle_spellcheck]
-    ];
+    let searchCmds = [];
+
+    for (let key of Object.keys(localStoarge_settings)) {
+        let arr = [">", localStoarge_settings[key]["Text"](), localStoarge_settings[key]["Function"]]
+        searchCmds.push(arr);
+    }
 
     let returnCmds = []
 
@@ -521,18 +555,23 @@ let figureOutWhatToDo = (e, selected_index) => {
 // Tabs 
 
 let add_tab = (e) => {
-
+    let textarea = document.getElementById("textarea");
+    let s = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    textarea.value = textarea.value.substring(0, s) + "\t" + textarea.value.substring(s);
+    textarea.setSelectionRange(s+1, end+1);
 }
 
 // Settings 
 
 let check_and_set_settings = () => {
-    required_settings = [
-                        ["isLightTheme", true, switch_theme], 
-                        ["scrollbarActive", true, toggle_scrollbar], 
-                        ["fullWidth", true, toggle_fullwidth],
-                        ["spellcheckActive", true, toggle_spellcheck]
-                    ]
+    let required_settings = []
+
+    for (let key of Object.keys(localStoarge_settings)) {
+        let arr = [localStoarge_settings[key]["localStorage"], localStoarge_settings[key]["Default"], localStoarge_settings[key]["Function"]]
+        required_settings.push(arr);
+    }
+
     for (let setting of required_settings) {
         if (localStorage[setting[0]] == null) {
             localStorage[setting[0]] = setting[1]
@@ -549,16 +588,6 @@ let download_file = (content, fileName, contentType) => {
     a.href = URL.createObjectURL(file);
     a.download = fileName;
     a.click();
-}
-
-let export_settings = () => {
-    let settings = ["isLightTheme", "scrollbarActive", "fullWidth", "spellcheckActive"]
-    let obj = {}
-    for (let setting of settings) {
-        obj[setting] = localStorage[setting];
-    }
-
-    download_file(JSON.stringify(obj), "settings.json", "JSON")
 }
 
 let open_file = (callback_func) => {
@@ -579,6 +608,41 @@ let open_file = (callback_func) => {
     }
 }
 
+let getAllFromStorage = () => {
+    const tx = db.transaction("storage", "readwrite");
+    const store = tx.objectStore("storage");
+    let request = store.getAll();
+
+    return request
+}
+
+let export_settings = () => {
+    let settings = []
+
+    for (let key of Object.keys(localStoarge_settings)) {
+        settings.push(localStoarge_settings[key]["localStorage"]);
+    }
+
+    let obj = {}
+    for (let setting of settings) {
+        obj[setting] = localStorage[setting];
+    }
+
+    download_file(JSON.stringify(obj), "settings.json", "JSON")
+}
+
+let export_data = () => {
+    request = getAllFromStorage();
+    request.onsuccess = (e) => {
+        download_file(JSON.stringify(e.target.result), "all_data.json", "JSON")
+    }
+
+    request.onerror = (e) => {
+        console.error(e);
+    }
+}
+
+
 let load_settings_from_file = (content) => {
     let obj = JSON.parse(content);
     
@@ -594,10 +658,38 @@ let import_settings = () => {
     open_file(load_settings_from_file);
 }
 
-let settings = {}
+let import_all_into_db = (content) => {
+    let obj = JSON.parse(content);
+    const tx = db.transaction("storage", "readwrite");
+    const store = tx.objectStore("storage");
+
+    for (let i of obj) {
+        let request = store.put(i);
+    
+        request.onerror = (e) => {
+            console.error(e);
+        }
+    }
+
+    
+    updateNoteKeys();
+    current_key = find_default();
+    localStorage["current_key"] = current_key;
+    updateTextArea();
+}
+
+let import_data = () => { 
+    for (let key of Object.keys(note_keys)) {
+        deleteFromStorage(key);
+    }      
+    
+    open_file(import_all_into_db)
+}
+
+let display_settings = {}
 
 let update_settings = () => {
-    settings = {
+    display_settings = {
         "Appearance": {
             "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
             "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
@@ -606,21 +698,17 @@ let update_settings = () => {
         },
         "Import Data": {
             "Import Settings": ["Import Settings From A File", "button", "Import", import_settings],
-            "Import All": ["Import All From A File", "button", "Import"],
+            "Import Data": ["Import Data From A File", "button", "Import", import_data],
             "Export Settings": ["Export Settings To A File", "button", "Export", export_settings],
-            "Export All": ["Export All To A File", "button", "Export"]
-        },
-        "Settings Menu 3": {},
-        "Settings Menu 4": {},
-        "Settings Menu 5": {},
-        "Settings Menu 6": {},
+            "Export Data": ["Export Data To A File", "button", "Export", export_data]
+        }
     }
 }
 
 let load_settings_into_settings_page = () => {
     update_settings();
     
-    let settings_pages = Object.keys(settings);
+    let settings_pages = Object.keys(display_settings);
     let parent = document.getElementById("settings-list");
     parent.innerHTML = "";
     for (let name of settings_pages) {
@@ -640,13 +728,13 @@ let load_settings_into_settings_page = () => {
         child.innerText = name;
 
         child.addEventListener("click", (e) => {
-            load_setting_contents_into_settings_page(settings[e.target.innerText])
+            load_setting_contents_into_settings_page(display_settings[e.target.innerText])
         })
 
         parent.appendChild(child);
     }
 
-    load_setting_contents_into_settings_page(settings["Appearance"])
+    load_setting_contents_into_settings_page(display_settings["Appearance"])
 }
 
 let load_setting_contents_into_settings_page = (shown_settings) => {
