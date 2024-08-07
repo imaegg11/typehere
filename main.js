@@ -423,6 +423,12 @@ const localStoarge_settings = {
         "localStorage": "spellcheckActive",
         "Default": true
     },
+    "Address": {
+        "Function": () => {},
+        "localStorage": "serverAddress",
+        "Default": "",
+        "Ignore": true
+    }
 }
 
 let findCommands = () => {
@@ -430,6 +436,10 @@ let findCommands = () => {
     let searchCmds = [];
 
     for (let key of Object.keys(localStoarge_settings)) {
+        if (localStoarge_settings[key]["Ignore"] === true) {
+            continue;
+        }
+
         let arr = [">", localStoarge_settings[key]["Text"](), localStoarge_settings[key]["Function"]]
         searchCmds.push(arr);
     }
@@ -694,14 +704,39 @@ let update_settings = () => {
             "Scrollbar": ["Show Scrollbar", "toggle", localStorage["scrollbarActive"], toggle_scrollbar],
             "Full Width": ["Display Full Width", "toggle", localStorage["fullWidth"], toggle_fullwidth],
             "Light Mode": ["Light Mode", "toggle", localStorage["isLightTheme"], switch_theme],
-            "Spellcheck": ["Toggle Spellcheck", "toggle", localStorage["spellcheckActive"], toggle_spellcheck]
+            "Spellcheck": ["Toggle Spellcheck", "toggle", localStorage["spellcheckActive"], toggle_spellcheck],
         },
         "Import Data": {
             "Import Settings": ["Import Settings From A File", "button", "Import", import_settings],
             "Import Data": ["Import Data From A File", "button", "Import", import_data],
             "Export Settings": ["Export Settings To A File", "button", "Export", export_settings],
-            "Export Data": ["Export Data To A File", "button", "Export", export_data]
+            "Export Data": ["Export Data To A File", "button", "Export", export_data],
+            "Server Address": ["Server Address", "text", localStorage["serverAddress"], update_server_address],
+            "Export Data To Server": ["Export Data To Server", "button", "Export", export_data_to_server],
         }
+    }
+}
+
+let export_data_to_server = async () => {
+    request = getAllFromStorage();
+    request.onsuccess = async (e) => {
+        await fetch(localStorage["serverAddress"] + "/postData", {
+            method: "POST",
+            body: JSON.stringify(e.target.result)
+        }) 
+        .then(response => response.json())
+        .then(content => alert(JSON.stringify(content)))
+    }
+
+    request.onerror = (e) => {
+        console.error(e);
+    }
+}
+
+let update_server_address = (e) => {
+    if (e.keyCode == 13) {
+        localStorage["serverAddress"] = e.target.value;
+        document.activeElement.blur();
     }
 }
 
@@ -793,6 +828,29 @@ let load_setting_contents_into_settings_page = (shown_settings) => {
                 })
 
                 change = button;
+                break;
+            case "text":
+                let text_input = document.createElement("input");
+
+                text_input.setAttribute("type", "text");
+                text_input.value = setting[2]
+
+                text_input = add_tailwind_classes(text_input, [
+                    "color-cmdP",
+                    "w-1/2",
+                    "h-10",
+                    "px-4",
+                    "py-2",
+                    "text-sm",
+                    "rounded-lg",
+                    "outline-none",
+                ])
+
+                text_input.addEventListener("keydown", (e) => {
+                    setting[3](e);
+                })
+
+                change = text_input;
                 break;
         }
 
