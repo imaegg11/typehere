@@ -25,17 +25,48 @@
             </div>
             <div id="notes" class="hide-scrollbar h-max max-h-40 overflow-y-auto my-0 mx-auto w-[95%]"></div>
         </dialog>
-        <dialog class="hidden p-4 w-1/2 h-3/5 text-inherit border-none bg-inherit rounded-lg grid grid-cols-[29.5%_1%_69.5%]" id="settings" tabindex="-1">
-            <div id="settings-list" class="h-full p-[0.8rem]">
-            </div>
-            <div class="inline-block h-full w-px self-stretch bg-[var(--selected-bg)]"></div>
-            <div id="settings-list-content" class="h-full py-[0.6rem] px-[13%]">
-                <div class="settings-list-content-item">
-                    <p>Show Scrollbar</p>
-                    <input class="toggle toggle-info" type="checkbox">
-                    </label>                    
+        <dialog class="hidden w-1/2 h-3/5 border-none bg-inherit rounded-lg text-inherit" id="settings" tabindex="-1">
+            <div class="p-4 h-full text-inherit border-none bg-inherit rounded-lg grid grid-cols-[29.5%_1%_69.5%]">
+                <div id="settings-list" class="h-full p-[0.8rem]">
+                </div>
+                <div class="inline-block h-full w-px self-stretch bg-[var(--selected-bg)]"></div>
+                <div id="settings-list-content" class="h-full py-[0.6rem] px-[13%]">
                 </div>
             </div>
+
+            <div id="failure" class="flex justify-center w-full opacity-0 transition-all duration-500">
+                <div role="alert" class="alert alert-error w-1/3 fixed top-4 m-auto select-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-6 w-6 shrink-0 stroke-current"
+                      fill="none"
+                      viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Error! Data Failed To Send. Check Console</span>
+                  </div>
+            </div>
+            <div id="success" class="flex justify-center w-full opacity-0 transition-all duration-500">
+                <div role="alert" class="alert alert-success w-1/3 fixed top-4 m-auto select-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-6 w-6 shrink-0 stroke-current"
+                      fill="none"
+                      viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Data Sent Successfully!</span>
+                  </div>
+            </div>
+            
         </dialog>
         <div id="bottom" class="color-bottom height-zero h-[2.3rem] absolute bottom-0 w-full flex items-center justify-between">
             <input type="text" id="current-note-name" class="text-inherit text-base w-1/2 text-ellipsis overflow-hidden border-none bg-transparent ml-2 active:border-none active:outline-none focus:border-none focus:outline-none" onkeydown="update_name(event)">

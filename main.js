@@ -428,6 +428,12 @@ const localStoarge_settings = {
         "localStorage": "serverAddress",
         "Default": "",
         "Ignore": true
+    },
+    "API Key": {
+        "Function": () => {},
+        "localStorage": "apiKey",
+        "Default": "",
+        "Ignore": true
     }
 }
 
@@ -712,6 +718,7 @@ let update_settings = () => {
             "Export Settings": ["Export Settings To A File", "button", "Export", export_settings],
             "Export Data": ["Export Data To A File", "button", "Export", export_data],
             "Server Address": ["Server Address", "text", localStorage["serverAddress"], update_server_address],
+            "API Key": ["API Key", "text", localStorage["apiKey"], update_api_key],
             "Export Data To Server": ["Export Data To Server", "button", "Export", export_data_to_server],
         }
     }
@@ -722,10 +729,36 @@ let export_data_to_server = async () => {
     request.onsuccess = async (e) => {
         await fetch(localStorage["serverAddress"] + "/postData", {
             method: "POST",
-            body: JSON.stringify(e.target.result)
+            body: JSON.stringify(e.target.result),
+            headers: {
+                'Authorization': localStorage["apiKey"]
+            }
         }) 
-        .then(response => response.json())
-        .then(content => alert(JSON.stringify(content)))
+        .then((response) => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                throw new Error(response.status)
+            }
+        })
+        .then((content) => {
+            let alert = document.getElementById("success");
+            alert.classList.remove("opacity-0");
+    
+            setTimeout(() => {
+                alert.classList.add("opacity-0");
+            }, 5000)
+        })
+        .catch((error) => {
+            let alert = document.getElementById("failure");
+            alert.classList.remove("opacity-0");
+    
+            setTimeout(() => {
+                alert.classList.add("opacity-0");
+            }, 5000)
+        })
+
+
     }
 
     request.onerror = (e) => {
@@ -739,6 +772,14 @@ let update_server_address = (e) => {
         document.activeElement.blur();
     }
 }
+
+let update_api_key = (e) => {
+    if (e.keyCode == 13) {
+        localStorage["apiKey"] = e.target.value;
+        document.activeElement.blur();
+    }
+}
+
 
 let load_settings_into_settings_page = () => {
     update_settings();
