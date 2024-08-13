@@ -349,14 +349,16 @@ let set_theme = (theme) => {
             "bg": "#f2f3f5",
             "search-bg": "#dfe0e2",
             "selected-bg": "rgba(0, 0, 0, 0.1)",
-            "bottom-bg": "#cecece"
+            "bottom-bg": "#cecece",
+            "button-unchecked": "#808080"
         }, 
         "dark": {
             "text": "#cacaca",
             "bg": "#2b2d31",
             "search-bg": "#1c1d1e",
             "selected-bg": "rgba(255, 255, 255, 0.1)",
-            "bottom-bg": "#212121"
+            "bottom-bg": "#212121",
+            "button-unchecked": "#8d8d8d"
         }
     }
 
@@ -719,9 +721,50 @@ let update_settings = () => {
             "Export Data": ["Export Data To A File", "button", "Export", export_data],
             "Server Address": ["Server Address", "text", localStorage["serverAddress"], update_server_address],
             "API Key": ["API Key", "text", localStorage["apiKey"], update_api_key],
+            "Import Data From SErver": ["Import Data From Server", "button", "Import", import_data_from_server],
             "Export Data To Server": ["Export Data To Server", "button", "Export", export_data_to_server],
         }
     }
+}
+
+let import_data_from_server = () => {
+    fetch(localStorage["serverAddress"] + "/getData", {
+        method: "GET",
+        headers: {
+            'Authorization': localStorage["apiKey"]
+        }
+    })
+    .then((response) => {
+        if (response.ok) {
+            return response.json()
+        } else {
+            throw new Error(response.status)
+        }
+    })
+    .then((content) => {
+        let alert = document.getElementById("success");
+        document.getElementById("success-text").innerHTML = "Data Retrieved Successfully"
+        alert.classList.remove("opacity-0");
+
+        setTimeout(() => {
+            alert.classList.add("opacity-0");
+        }, 5000)
+
+        for (let key of Object.keys(note_keys)) {
+            deleteFromStorage(key);
+        }    
+
+        import_all_into_db(content)
+    })
+    .catch((error) => {
+        let alert = document.getElementById("failure");
+        document.getElementById("failure-text").innerHTML = "Error! Failed To Retrieve Data. Check Console"
+        alert.classList.remove("opacity-0");
+
+        setTimeout(() => {
+            alert.classList.add("opacity-0");
+        }, 5000)
+    })
 }
 
 let export_data_to_server = async () => {
@@ -743,6 +786,7 @@ let export_data_to_server = async () => {
         })
         .then((content) => {
             let alert = document.getElementById("success");
+            document.getElementById("success-text").innerHTML = "Data Sent Successfully!"
             alert.classList.remove("opacity-0");
     
             setTimeout(() => {
@@ -751,6 +795,7 @@ let export_data_to_server = async () => {
         })
         .catch((error) => {
             let alert = document.getElementById("failure");
+            document.getElementById("failure-text").innerHTML = "Error! Data Failed To Send. Check Console"
             alert.classList.remove("opacity-0");
     
             setTimeout(() => {

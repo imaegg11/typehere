@@ -30,7 +30,7 @@
                 <div id="settings-list" class="h-full p-[0.8rem]">
                 </div>
                 <div class="inline-block h-full w-px self-stretch bg-[var(--selected-bg)]"></div>
-                <div id="settings-list-content" class="h-full py-[0.6rem] px-[13%]">
+                <div id="settings-list-content" class="h-full py-[0.6rem] px-[13%] overflow-y-auto">
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                         stroke-width="2"
                         d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Error! Data Failed To Send. Check Console</span>
+                    <p id="failure-text">Error! Data Failed To Send. Check Console</p>
                   </div>
             </div>
             <div id="success" class="flex justify-center w-full opacity-0 transition-all duration-500">
@@ -63,7 +63,7 @@
                         stroke-width="2"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Data Sent Successfully!</span>
+                    <p id="success-text">Data Sent Successfully!</p>
                   </div>
             </div>
             
