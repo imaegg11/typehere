@@ -17,7 +17,11 @@ let toggleDetails = () => {
     detailsOpen = !detailsOpen;
 
     let note = [current_key, note_keys[current_key][1]]
-    document.getElementById("details").innerText = `${(new Blob([document.getElementById("textarea").value]).size/1000).toFixed(2)}kB - ${new Date(parseInt(note[1])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[1])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
+    document.getElementById("details").innerText = bottom_details(note)
+}
+
+let bottom_details = (note) => {
+    return `${document.getElementById("textarea").value == undefined ? 0 : document.getElementById("textarea").value.length} - ${(new Blob([document.getElementById("textarea").value]).size/1000).toFixed(2)}kB - ${new Date(parseInt(note[1])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[1])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
 }
 
 document.addEventListener("keydown", (e) => {
@@ -193,6 +197,9 @@ let updateStorage = (e) => {
     if (e.keyCode == 9) {
         add_tab(e);
         e.preventDefault();
+    } else if (e.keyCode == 13) {
+        indent(e);
+        e.preventDefault();
     }
 
     let textarea = document.getElementById("textarea");
@@ -209,7 +216,7 @@ let updateTextArea = () => {
         textarea.value = e.target.result.content;
         document.getElementById("current-note-name").value = note_keys[current_key][0];
         let note = [current_key, note_keys[current_key][1]]
-        document.getElementById("details").innerText = `${(new Blob([document.getElementById("textarea").value]).size/1000).toFixed(2)}kB - ${new Date(parseInt(note[1])).toLocaleString().split(", ")[1]} ${new Date(parseInt(note[1])).toDateString().substring(4)} - ${new Date(parseInt(note[0])).toDateString().substring(4)}`
+        document.getElementById("details").innerText = bottom_details(note)
     }
 
     request.onerror = (e) => {
@@ -330,13 +337,15 @@ let findNotes = () => {
     let notes = [];
 
     for (let key of Object.keys(note_keys)) {
-        if (search.value == "" || note_keys[key][0].includes(search.value)) {
+        if (search.value == "" || note_keys[key][0].toLowerCase().includes(search.value.toLowerCase())) {
             notes.push([]);
             notes[notes.length - 1].push(key);
             notes[notes.length - 1].push(note_keys[key][0])
             notes[notes.length - 1].push(note_keys[key][1])
         }
     }
+
+    notes.sort((a, b) =>  b[2] - a[2])
 
     return notes
 }
@@ -578,6 +587,49 @@ let add_tab = (e) => {
     let end = textarea.selectionEnd;
     textarea.value = textarea.value.substring(0, s) + "\t" + textarea.value.substring(s);
     textarea.setSelectionRange(s+1, end+1);
+}
+
+// Indentation
+
+let indent = (e) => {
+    let textarea = document.getElementById("textarea");
+    let s = textarea.selectionStart;
+    let lines = textarea.value.split("\n");
+    let c = 0;
+    let prev_line;
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (s >= 0 && s <= c + line.length) {
+            prev_line = line 
+            break
+        } else {
+            c += line.length + 1
+        }
+    } 
+
+    if (s == 0) {
+        let textarea = document.getElementById("textarea");
+        let start = textarea.selectionStart;
+        let end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + "\n" + textarea.value.substring(end);
+        textarea.setSelectionRange(start + 1, start + 1);
+    } else if (prev_line != undefined) {
+        let tabs = 0
+        for (let i = 0; i < prev_line.length; i++) {
+            if (prev_line[i] == "\t") {
+                tabs++;
+            } else {
+                break;
+            }
+        }
+
+        let textarea = document.getElementById("textarea");
+        let start = textarea.selectionStart;
+        let end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + "\n" + "\t".repeat(tabs) + textarea.value.substring(end);
+        textarea.setSelectionRange(start + tabs + 1, start + tabs + 1);
+    }
+
 }
 
 // Settings 
