@@ -1,5 +1,5 @@
 # Typehere++ 
-A https://typehere.cc/ clone with more functionality 
+A https://typehere.cc/ clone with more functionality (Saved after refresh, settings menu, multiple pages, export and import)
 
 Keybinds:
 
