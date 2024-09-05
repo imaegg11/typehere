@@ -571,7 +571,7 @@ let figureOutWhatToDo = (e, selected_index) => {
         }
         e.preventDefault();
         cmdPToggle();
-    } else if (selected[0][0] != ">" && e.altKey && (keyCode == 46 || keyCode == 8)) {
+    } else if (selected[0][0] != ">" && e.altKey && (keyCode == 46 || keyCode == 8 || keyCode == 68)) {
         e.preventDefault();
         delete_note(selected[0]);
         cmdPToggle();
